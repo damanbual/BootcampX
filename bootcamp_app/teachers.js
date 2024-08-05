@@ -9,9 +9,10 @@ const pool = new Pool({
 });
 
 const cohortName = process.argv[2];
+const values = [cohortName];
 
-const query = `
-  SELECT DISTINCT teachers.name as teacher, cohorts.name as cohort
+const queryString = `
+  SELECT DISTINCT teachers.name AS teacher, cohorts.name AS cohort
   FROM assistance_requests
   JOIN teachers ON teachers.id = assistance_requests.teacher_id
   JOIN students ON students.id = assistance_requests.student_id
@@ -20,18 +21,10 @@ const query = `
   ORDER BY teacher;
 `;
 
-const values = [cohortName];
-
-pool
-  .query(query, values)
+pool.query(queryString, values)
   .then((res) => {
-    if (res.rows.length === 0) {
-      console.log("No results found.");
-    } else {
-      res.rows.forEach((row) => {
-        console.log(`${row.cohort}: ${row.teacher}`);
-      });
-    }
+    res.rows.forEach((row) => {
+      console.log(`${row.cohort}: ${row.teacher}`);
+    });
   })
-  .catch((err) => console.error("query error", err.stack))
-  .finally(() => pool.end());
+  .catch((err) => console.error("query error", err.stack));
